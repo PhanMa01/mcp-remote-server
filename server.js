@@ -670,15 +670,15 @@ async function startServer(config = {}) {
       res.writeHead(200, {
         "Content-Type": "text/event-stream",
         "Cache-Control": "no-cache",
-        Connection: "keep-alive",
+        "Connection": "keep-alive",
         "Access-Control-Allow-Origin": "*",
       });
 
       // Send initial dummy event
       res.write(`event: message\n`);
-      res.write(
-        `data: ${JSON.stringify({ status: "connected", time: Date.now() })}\n\n`
-      );
+       res.write(
+         `data: ${JSON.stringify({ type: "initialized", status: "ok" })}\n\n`
+       );
 
       // Ping every 10s to keep connection alive
       const interval = setInterval(() => {
