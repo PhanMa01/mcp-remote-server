@@ -32,6 +32,7 @@ if (!fs.existsSync(DATA_FILE)) {
 app.use(cors());
 app.use(bodyParser.json());
 
+
 // Helper functions for file operations
 const readData = () => {
   try {
@@ -77,7 +78,7 @@ app.get("/events", (req, res) => {
 
   // Send initial data
   const data = readData();
-  
+
   // Gửi event 'initialized' để Copilot Agent hoàn tất kết nối
   res.write(`event: message\n`);
   res.write(
@@ -149,6 +150,17 @@ app.patch("/project/context", (req, res) => {
   writeData(currentData);
   sendUpdate("context_update", currentData);
   res.json(currentData);
+});
+
+// Health check endpoint REQUIRED by Copilot Agent
+app.get('/initialize', (req, res) => {
+  res.status(200).json({
+    status: 'ready',
+    endpoints: {
+      events: '/events',
+      health: '/health'
+    }
+  });
 });
 
 // Health check endpoint
