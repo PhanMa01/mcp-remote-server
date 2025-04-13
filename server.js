@@ -74,25 +74,32 @@ app.get("/events", (req, res) => {
     "Connection": "keep-alive",
     "Access-Control-Allow-Origin": "*",
   });
-  
+
   // Send initial data
   const data = readData();
-  res.write(`data: ${JSON.stringify(data)}\n\n`);
   
+  // Gửi event 'initialized' để Copilot Agent hoàn tất kết nối
+  res.write(`event: message\n`);
+  res.write(
+    `data: ${JSON.stringify({ type: "initialized", status: "ok" })}\n\n`
+  );
+
+  res.write(`data: ${JSON.stringify(data)}\n\n`);
+
   const interval = setInterval(() => {
     res.write(`event: ping\n`);
     res.write(`data: ${Date.now()}\n\n`);
   }, 10000);
-  
+
   // Add client to the set
   clients.add(res);
-  
+
   // Remove client when connection is closed
   req.on("close", () => {
     clients.delete(res);
     console.log("Client disconnected, total connected:", clients.size);
   });
-  
+
   console.log("New client connected, total connected:", clients.size);
 });
 
