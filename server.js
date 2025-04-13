@@ -1,5 +1,4 @@
 const express = require("express");
-const bodyParser = require("body-parser");
 const cors = require("cors");
 const fs = require("fs");
 const path = require("path");
@@ -30,7 +29,7 @@ if (!fs.existsSync(DATA_FILE)) {
 
 // Middleware
 app.use(cors());
-app.use(bodyParser.json());
+app.use(express.json());
 
 
 // Helper functions for file operations
@@ -108,6 +107,67 @@ app.get("/events", (req, res) => {
 app.get("/project", (req, res) => {
   const data = readData();
   res.json(data);
+});
+
+app.post("/", async (req, res) => {
+  const { command, ...body } = req.body;
+
+  if (!command) {
+    return res.status(400).json({
+      status: "error",
+      message: "Missing 'command' in request",
+    });
+  }
+
+  // Lệnh generate: phản hồi mô phỏng
+  if (command === "generate") {
+    const { prompt } = body;
+
+    if (!prompt) {
+      return res.status(400).json({
+        status: "error",
+        message: "Missing 'prompt'",
+      });
+    }
+
+    const response = `MCP server nhận được prompt: "${prompt}" và phản hồi mô phỏng.`;
+
+    return res.json({
+      status: "success",
+      response,
+    });
+  }
+
+  // Lệnh update_project_context
+  else if (command === "update_project_context") {
+    const { field, value } = body;
+
+    if (!field || typeof value === "undefined") {
+      return res.status(400).json({
+        status: "error",
+        message: "Missing 'field' or 'value'",
+      });
+    }
+
+    const data = readData();
+    if (!data.project_context) {
+      data.project_context = {};
+    }
+
+    data.project_context[field] = value;
+    writeData(data);
+
+    return res.json({
+      status: "success",
+      project_context: data.project_context,
+    });
+  }
+
+  // Nếu lệnh không hợp lệ
+  return res.status(400).json({
+    status: "error",
+    message: `Unknown command: ${command}`,
+  });
 });
 
 app.put("/project", (req, res) => {
