@@ -580,7 +580,12 @@ async function startServer(config = {}) {
   /**
    * Start the MCP server with HTTP and WebSocket support.
    */
-  const { host = "127.0.0.1", tcpPort = 8080, httpPort = 8081 } = config;
+  const {
+    host = "0.0.0.0",
+    tcpPort = 8080,
+    httpPort = process.env.PORT || 8081,
+  } = config;
+
 
   const server = new MCPServer();
   const protocol = new MCPServerProtocol(server);
