@@ -1,0 +1,24 @@
+{
+  "name": "mcp-remote-server",
+  "version": "1.0.0",
+  "description": "MCP remote context server for Copilot integration",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "body-parser": "^2.2.0",
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "mcp-remote-server": "file:",
+    "uuid": "^9.0.0",
+    "ws": "^8.18.1"
+  },
+  "devDependencies": {
+    "dotenv": "^16.5.0",
+    "node": ">=16"
+  }
+}
