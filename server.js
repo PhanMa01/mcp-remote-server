@@ -614,6 +614,35 @@ async function startServer(config = {}) {
     }
 
     // Serve a simple HTML page for WebSocket testing
+    // Server-Sent Events (SSE) endpoint
+    if (req.method === "GET" && req.url === "/events") {
+      res.writeHead(200, {
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache",
+        Connection: "keep-alive",
+        "Access-Control-Allow-Origin": "*",
+      });
+
+      // Send initial dummy event
+      res.write(`event: message\n`);
+      res.write(
+        `data: ${JSON.stringify({ status: "connected", time: Date.now() })}\n\n`
+      );
+
+      // Ping every 10s to keep connection alive
+      const interval = setInterval(() => {
+        res.write(`event: ping\n`);
+        res.write(`data: ${Date.now()}\n\n`);
+      }, 10000);
+
+      // Clean up if client closes connection
+      req.on("close", () => {
+        clearInterval(interval);
+        res.end();
+      });
+
+      return;
+    }
     if (req.method === "GET" && req.url === "/") {
       res.writeHead(200, { "Content-Type": "text/html" });
       res.end(`
