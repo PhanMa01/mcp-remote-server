@@ -71,12 +71,18 @@ app.get("/events", (req, res) => {
   res.writeHead(200, {
     "Content-Type": "text/event-stream",
     "Cache-Control": "no-cache",
-    "Connection": "keep-alive"
+    "Connection": "keep-alive",
+    "Access-Control-Allow-Origin": "*",
   });
   
   // Send initial data
   const data = readData();
   res.write(`data: ${JSON.stringify(data)}\n\n`);
+  
+  const interval = setInterval(() => {
+    res.write(`event: ping\n`);
+    res.write(`data: ${Date.now()}\n\n`);
+  }, 10000);
   
   // Add client to the set
   clients.add(res);
