@@ -3,6 +3,8 @@ const http = require("http");
 const { WebSocketServer } = require("ws");
 const { v4: uuidv4 } = require("uuid");
 const url = require("url");
+const fs = require("fs");
+const path = require("path");
 
 // Configure logging
 const logger = {
@@ -216,6 +218,38 @@ class MCPServer {
     this.sessions = {};
   }
 
+  getMCPFilePath() {
+    return path.join(__dirname, "mcp.json");
+  }
+
+  loadProjectContextFromFile() {
+    try {
+      const data = fs.readFileSync(this.getMCPFilePath(), "utf8");
+      const json = JSON.parse(data);
+      return json.project_context || {};
+    } catch (e) {
+      logger.error("Failed to load mcp.json:", e.message);
+      return {};
+    }
+  }
+
+  saveProjectContextToFile(projectContext) {
+    try {
+      const mcpPath = this.getMCPFilePath();
+      let mcpData = {};
+
+      if (fs.existsSync(mcpPath)) {
+        mcpData = JSON.parse(fs.readFileSync(mcpPath, "utf8"));
+      }
+
+      mcpData.project_context = projectContext;
+      fs.writeFileSync(mcpPath, JSON.stringify(mcpData, null, 2), "utf8");
+      logger.info("Saved updated project_context to mcp.json");
+    } catch (e) {
+      logger.error("Failed to write mcp.json:", e.message);
+    }
+  }
+
   createSession() {
     /**
      * Create a new session and return its ID.
@@ -426,6 +460,23 @@ class MCPServer {
           return {
             status: "success",
             results: results.map((doc) => doc.toDict()),
+          };
+        }
+
+        case "update_project_context": {
+          const { field, value } = requestData;
+
+          if (!field || typeof value === "undefined") {
+            return { status: "error", message: "Field and value are required" };
+          }
+
+          const projectContext = this.loadProjectContextFromFile();
+          projectContext[field] = value;
+          this.saveProjectContextToFile(projectContext);
+
+          return {
+            status: "success",
+            project_context: projectContext,
           };
         }
 
